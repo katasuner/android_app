@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">mood diary</string>
+    <string name="top_name">Дневник настроения</string>
+    <string name="event_str">Событие которое тебя расстроило</string>
+    <string name="add_event_str">Событие которое тебя расстроило</string>
+    <string name="btn_event_str">Добавить событие</string>
+</resources>

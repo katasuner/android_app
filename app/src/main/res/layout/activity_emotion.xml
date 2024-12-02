@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gray"
+    android:padding="16dp">
+
+    <!-- Заголовок с текстом "Эмоции", "До", "После" -->
+    <LinearLayout
+        android:id="@+id/header_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:text="Эмоции"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginStart="8dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="До"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="После"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textSize="16sp"/>
+    </LinearLayout>
+
+    <!-- Контейнер для списка эмоций и полей для значений "До" и "После" -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/dialog_background">
+
+        <!-- RecyclerView для эмоций (вертикально) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_emotions"
+            android:layout_width="0dp"
+            android:layout_weight="3"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="vertical"/>
+
+        <!-- Поле "До" -->
+        <EditText
+            android:id="@+id/emotion_before_value"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:inputType="number"
+            android:maxLength="4"
+            android:hint="0"
+            android:background="@color/yellow"
+            android:gravity="center"
+            android:minHeight="48dp"
+            android:layout_marginStart="8dp"/>
+
+        <!-- Поле "После" -->
+        <EditText
+            android:id="@+id/emotion_after_value"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:inputType="number"
+            android:maxLength="4"
+            android:hint="0"
+            android:background="@color/yellow"
+            android:gravity="center"
+            android:minHeight="48dp"
+            android:layout_marginStart="8dp"/>
+        </LinearLayout>
+
+    <!-- Кнопка для завершения ввода -->
+    <Button
+        android:id="@+id/negative_thoughts_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Негативные мысли"
+        android:backgroundTint="@color/violet"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"/>
+</LinearLayout>
