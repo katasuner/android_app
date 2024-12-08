@@ -1,0 +1,52 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Отображение отрицательной мысли -->
+        <TextView
+            android:id="@+id/negative_thought_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:background="@drawable/rounded_background" />
+
+        <!-- Положительные мысли -->
+        <TextView
+            android:id="@+id/positive_thoughts_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Положительные мысли"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp" />
+
+        <!-- Контейнер для положительных мыслей -->
+        <LinearLayout
+            android:id="@+id/positive_thoughts_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <!-- Кнопка добавления положительных мыслей -->
+        <Button
+            android:id="@+id/add_positive_thought_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Добавить позитивную мысль"
+            android:backgroundTint="@color/violet"
+            android:textColor="@android:color/white"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+    </LinearLayout>
+</ScrollView>

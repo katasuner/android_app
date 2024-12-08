@@ -22,6 +22,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".EmotionActivity" />
+        <activity android:name=".NegativeThoughtsActivity"/>
+        <activity android:name=".PositiveThoughtsActivity"/>
     </application>
 
 </manifest>

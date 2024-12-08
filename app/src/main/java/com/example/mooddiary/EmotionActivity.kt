@@ -1,12 +1,12 @@
 package com.example.mooddiary
 
+import android.content.Intent
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
-import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -36,7 +36,6 @@ class EmotionActivity : AppCompatActivity() {
             listOf("Беспомощность", "Уныние", "Пессимизм", "Отчаяние"),
             listOf("Досада", "Чувство тупиковости", "Повержености", "Постоянных преград на пути"),
             listOf("Злость", "Гнев", "Обида", "Раздражение", "Рассержен", "Расстроен", "В бешенстве")
-
         )
 
         val container = findViewById<LinearLayout>(R.id.emotion_blocks_container)
@@ -55,10 +54,11 @@ class EmotionActivity : AppCompatActivity() {
             container.addView(blockView)
         }
 
-        // Настройка кнопки
+        // Настройка кнопки для перехода на новую активность
         val negativeThoughtsButton = findViewById<Button>(R.id.negative_thoughts_button)
         negativeThoughtsButton.setOnClickListener {
-            // Обработка нажатия кнопки
+            val intent = Intent(this, NegativeThoughtsActivity::class.java)
+            startActivity(intent)
         }
     }
 
