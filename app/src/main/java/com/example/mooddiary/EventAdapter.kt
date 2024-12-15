@@ -1,3 +1,5 @@
+package com.example.mooddiary
+
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
@@ -5,13 +7,15 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mooddiary.EmotionActivity
-import com.example.mooddiary.R
 
-class EventAdapter(private val events: MutableList<String>) : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
+class EventAdapter(
+    private val events: MutableList<Event>,
+    private val onEventClick: (Event) -> Unit, // Колбэк для клика по событию
+    private val onDeleteClick: (Event) -> Unit // Колбэк для удаления события
+) : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
 
     inner class EventViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val eventTextView: TextView = itemView.findViewById(R.id.event_text)
+        val eventDescription: TextView = itemView.findViewById(R.id.event_text) // Текст события
         val deleteButton: ImageButton = itemView.findViewById(R.id.delete_button) // Кнопка удаления
     }
 
@@ -22,23 +26,29 @@ class EventAdapter(private val events: MutableList<String>) : RecyclerView.Adapt
 
     override fun onBindViewHolder(holder: EventViewHolder, position: Int) {
         val event = events[position]
-        holder.eventTextView.text = event
+        holder.eventDescription.text = event.description
 
-        // Установка слушателя для кнопки удаления
-        holder.deleteButton.setOnClickListener {
-            events.removeAt(position)
-            notifyItemRemoved(position)
-            notifyItemRangeChanged(position, events.size)
+        // Обработка клика на текст события (переход на другую страницу)
+        holder.eventDescription.setOnClickListener {
+            onEventClick(event)
         }
 
-        // Установка слушателя для перехода при нажатии на элемент списка
-        holder.itemView.setOnClickListener {
-            val context = holder.itemView.context
-            val intent = Intent(context, EmotionActivity::class.java)
-            intent.putExtra("event", event) // Передаем событие в следующую активность
-            context.startActivity(intent)
+        // Обработка клика на крестик (удаление события)
+        holder.deleteButton.setOnClickListener {
+            onDeleteClick(event)
         }
     }
 
     override fun getItemCount(): Int = events.size
+
+    // Метод для обновления списка событий
+    fun setEvents(newEvents: List<Event>) {
+        events.clear()
+        events.addAll(newEvents)
+        notifyDataSetChanged()
+    }
 }
+
+
+
+

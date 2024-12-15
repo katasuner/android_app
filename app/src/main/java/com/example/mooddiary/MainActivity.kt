@@ -1,73 +1,89 @@
 package com.example.mooddiary
 
-import EventAdapter
+import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
+import android.util.Log
 import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.text.Editable
-import android.text.TextWatcher
-import android.graphics.Paint
-import android.graphics.Typeface
+import kotlinx.coroutines.launch
+import androidx.core.widget.addTextChangedListener
+import android.app.AlertDialog
+import android.view.LayoutInflater
+import android.widget.EditText
+import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var eventViewModel: EventViewModel
+    private lateinit var eventAdapter: EventAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        // Инициализация базы данных и ViewModel
+        val database = AppDatabase.getDatabase(this)
+        val eventDao = database.eventDao()
+        val factory = EventViewModelFactory(eventDao)
+        eventViewModel = ViewModelProvider(this, factory).get(EventViewModel::class.java)
 
-        // Настройка RecyclerView
-        val events = mutableListOf<String>()
-        val eventAdapter = EventAdapter(events)
+        // Настройка RecyclerView и адаптера
+        eventAdapter = EventAdapter(
+            events = mutableListOf(),
+            onEventClick = { event ->
+                // Переход к EmotionActivity
+                val intent = Intent(this, EmotionActivity::class.java)
+                intent.putExtra("eventId", event.id)
+                intent.putExtra("event", event.description)
+                startActivity(intent)
+            },
+            onDeleteClick = { event ->
+                // Удаление события
+                lifecycleScope.launch {
+                    eventViewModel.deleteEvent(event) // Удаление события через ViewModel
+                }
+            }
+        )
 
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.adapter = eventAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        val addEventButton = findViewById<Button>(R.id.add_event_button)
-        addEventButton.setOnClickListener {
-            showAddEventDialog(events, eventAdapter, recyclerView)
+        // Подписка на обновления списка событий
+        lifecycleScope.launch {
+            eventViewModel.getAllEvents().collect { events ->
+                eventAdapter.setEvents(events) // Обновляем список событий
+            }
+        }
+
+        // Обработка кнопки добавления события
+        findViewById<Button>(R.id.add_event_button).setOnClickListener {
+            showAddEventDialog() // Показ диалога для добавления нового события
         }
     }
 
-    private fun showAddEventDialog(events: MutableList<String>, eventAdapter: EventAdapter, recyclerView: RecyclerView) {
+    // Метод для показа диалога добавления события
+    private fun showAddEventDialog() {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_event, null)
         val editTextEvent = dialogView.findViewById<EditText>(R.id.edit_text_event)
         val characterCount = dialogView.findViewById<TextView>(R.id.character_count)
 
-        editTextEvent.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val length = s?.length ?: 0
-                characterCount.text = "$length/100"
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
+        // Обновляем счётчик символов в режиме реального времени
+        editTextEvent.addTextChangedListener { text ->
+            val length = text?.length ?: 0
+            characterCount.text = "$length/100"
+        }
 
+        // Создание AlertDialog
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
-            .setPositiveButton("Сохранить") { _, _ ->
-                val newEvent = editTextEvent.text.toString().trim()
-                if (newEvent.isNotEmpty()) {
-                    events.add(newEvent)
-                    eventAdapter.notifyItemInserted(events.size - 1)
-                    recyclerView.scrollToPosition(events.size - 1)
+            .setPositiveButton("Добавить") { _, _ ->
+                val eventText = editTextEvent.text.toString()
+                if (eventText.isNotBlank()) {
+                    addNewEvent(eventText) // Добавляем новое событие
                 }
             }
             .setNegativeButton("Отмена", null)
@@ -76,12 +92,12 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
-    // Метод для обработки нажатий на эмоции
-    fun onEmotionClick(view: View) {
-        if (view is TextView) {
-            // Сделать текст жирным и подчеркнутым при клике
-            view.paintFlags = view.paintFlags or Paint.UNDERLINE_TEXT_FLAG
-            view.setTypeface(view.typeface, Typeface.BOLD)
+    // Метод для добавления нового события
+    private fun addNewEvent(description: String) {
+        lifecycleScope.launch {
+            val newEvent = Event(description = description)
+            eventViewModel.addEvent(newEvent) // Добавляем событие через ViewModel
         }
     }
 }
+

@@ -1,5 +1,6 @@
 package com.example.mooddiary
 
+import android.content.Intent
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Bundle
@@ -81,6 +82,14 @@ class NegativeThoughtsActivity : AppCompatActivity() {
         val textView = thoughtView.findViewById<TextView>(R.id.thought_text)
         textView.text = thoughtText
 
+        // Добавляем переход на экран с положительными мыслями
+        textView.setOnClickListener {
+            val intent = Intent(this, PositiveThoughtsActivity::class.java)
+            intent.putExtra("negative_thought", thoughtText) // Передаем текст негативной мысли
+            startActivity(intent)
+        }
+
         container.addView(thoughtView)
     }
+
 }
