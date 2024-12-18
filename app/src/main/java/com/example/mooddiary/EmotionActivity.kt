@@ -1,8 +1,10 @@
 package com.example.mooddiary
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -24,7 +26,7 @@ class EmotionActivity : AppCompatActivity() {
         // Получаем eventId из Intent
         eventId = intent.getIntExtra("eventId", -1)
         if (eventId == -1) {
-            finish() // Завершаем, если eventId не передан
+            finish()
             return
         }
 
@@ -38,6 +40,14 @@ class EmotionActivity : AppCompatActivity() {
             emotions.addAll(getOrCreateEmotionsForEvent(eventId))
             setupEmotionBlocks(emotions)
         }
+
+        // Кнопка перехода к негативным мыслям
+        val negativeThoughtsButton = findViewById<Button>(R.id.negative_thoughts_button)
+        negativeThoughtsButton.setOnClickListener {
+            val intent = Intent(this, NegativeThoughtsActivity::class.java)
+            intent.putExtra("eventId", eventId)
+            startActivity(intent)
+        }
     }
 
     // Создание или загрузка эмоций
@@ -47,26 +57,21 @@ class EmotionActivity : AppCompatActivity() {
             return existingEmotions
         }
 
-        // Если эмоции ещё не созданы, создаём их
         val defaultEmotions = listOf(
             listOf("Грусть", "Подавленность", "Упадок настроения", "Печаль"),
             listOf("Тревога", "Беспокойство", "Паника", "Нервозность", "Страх"),
             listOf("Вина", "Угрызение совести", "Стыд", "Сожаление"),
-            listOf("Чувство собественной неполноценности", "Никчемности", "Непригодности", "Ущербности","Некомпетентности"),
+            listOf("Чувство собственной неполноценности", "Никчемности", "Непригодности", "Ущербности", "Некомпетентности"),
             listOf("Одиночество", "Никому не нужен", "Чувство себя отвергнутым", "Брошенным", "Оставленным"),
             listOf("Смущение", "Чувство себя глупо", "Унизительно", "Зациклен на себе"),
             listOf("Беспомощность", "Уныние", "Пессимизм", "Отчаяние"),
-            listOf("Досада", "Чувство тупиковости", "Повержености", "Постоянных преград на пути"),
+            listOf("Досада", "Чувство тупиковости", "Поверженности", "Постоянных преград на пути"),
             listOf("Злость", "Гнев", "Обида", "Раздражение", "Рассержен", "Расстроен", "В бешенстве")
         )
 
         val newEmotions = defaultEmotions.flatMapIndexed { groupIndex, group ->
             group.map { emotionText ->
-                Emotion(
-                    eventId = eventId,
-                    emotionText = emotionText,
-                    groupIndex = groupIndex
-                )
+                Emotion(eventId = eventId, emotionText = emotionText, groupIndex = groupIndex)
             }
         }
 
@@ -79,7 +84,6 @@ class EmotionActivity : AppCompatActivity() {
         val container = findViewById<LinearLayout>(R.id.emotion_blocks_container)
         container.removeAllViews()
 
-        // Группируем эмоции по индексам группы
         val groupedEmotions = emotions.groupBy { it.groupIndex }
         val inflater = layoutInflater
 
@@ -88,16 +92,16 @@ class EmotionActivity : AppCompatActivity() {
 
             val recyclerView = blockView.findViewById<RecyclerView>(R.id.recycler_view_emotions)
             recyclerView.layoutManager = LinearLayoutManager(this)
-            recyclerView.adapter = EmotionAdapter(group, onEmotionClick)
+
+            val adapter = EmotionAdapter(group.toMutableList(), onEmotionClick)
+            recyclerView.adapter = adapter
 
             val beforeValue = blockView.findViewById<EditText>(R.id.emotion_before_value)
             val afterValue = blockView.findViewById<EditText>(R.id.emotion_after_value)
 
-            // Устанавливаем текущие значения "до" и "после" из первой эмоции группы
-            beforeValue.setText(group.firstOrNull()?.beforeValue?.toString() ?: "0")
-            afterValue.setText(group.firstOrNull()?.afterValue?.toString() ?: "0")
+            beforeValue.setText(group.firstOrNull()?.beforeValue?.takeIf { it != 0 }?.toString() ?: "")
+            afterValue.setText(group.firstOrNull()?.afterValue?.takeIf { it != 0 }?.toString() ?: "")
 
-            // Сохранение значений "До" при каждом изменении
             beforeValue.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                     val value = s?.toString()?.toIntOrNull() ?: 0
@@ -113,7 +117,6 @@ class EmotionActivity : AppCompatActivity() {
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             })
 
-            // Сохранение значений "После" при каждом изменении
             afterValue.addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(s: Editable?) {
                     val value = s?.toString()?.toIntOrNull() ?: 0
@@ -133,19 +136,11 @@ class EmotionActivity : AppCompatActivity() {
         }
     }
 
-    // Обработка кликов на эмоции
-    private val onEmotionClick: (Emotion) -> Unit = { emotion ->
+    private val onEmotionClick: (Emotion, EmotionAdapter) -> Unit = { emotion, adapter ->
         lifecycleScope.launch {
-            // Переключаем состояние выделения эмоции
             val updatedEmotion = emotion.copy(isSelected = !emotion.isSelected)
             emotionDao.updateEmotion(updatedEmotion)
-
-            // Обновляем локальный список
-            val index = emotions.indexOfFirst { it.id == emotion.id }
-            if (index != -1) {
-                emotions[index] = updatedEmotion
-                setupEmotionBlocks(emotions) // Перерисовываем блоки
-            }
+            adapter.updateEmotion(updatedEmotion)
         }
     }
 }
