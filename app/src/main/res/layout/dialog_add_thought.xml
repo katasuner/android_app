@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:hint="Введите сюда."
         android:inputType="textMultiLine"
-        android:maxLength="100"
+        android:maxLength="200"
         android:background="@android:drawable/edit_text"
         android:gravity="top"
         android:minHeight="100dp"
@@ -35,7 +35,7 @@
         android:id="@+id/text_character_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0/100"
+        android:text="0/200"
         android:textSize="12sp"
         android:layout_gravity="end"/>
 

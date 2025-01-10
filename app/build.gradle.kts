@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.mooddiary"
+    namespace = "com.cheba.mooddiary"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.mooddiary"
+        applicationId = "com.cheba.mooddiary"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
