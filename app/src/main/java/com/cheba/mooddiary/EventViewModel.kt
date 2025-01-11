@@ -2,25 +2,28 @@ package com.cheba.mooddiary
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
 
 class EventViewModel(private val eventDao: EventDao) : ViewModel() {
-    // Получение всех событий
     fun getAllEvents(): Flow<List<Event>> = eventDao.getAllEvents()
 
-    // Добавление события
     fun addEvent(event: Event) {
         viewModelScope.launch {
             eventDao.insertEvent(event)
         }
     }
 
-    // Удаление события
     fun deleteEvent(event: Event) {
         viewModelScope.launch {
             eventDao.deleteEvent(event)
+        }
+    }
+
+    fun updateEvent(event: Event) {
+        viewModelScope.launch {
+            eventDao.updateEvent(event) // Обновление события
         }
     }
 }

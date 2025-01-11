@@ -1,19 +1,16 @@
 package com.cheba.mooddiary
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
-import androidx.core.widget.addTextChangedListener
-import android.app.AlertDialog
-import android.view.LayoutInflater
-import android.widget.EditText
-import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var eventViewModel: EventViewModel
@@ -33,17 +30,20 @@ class MainActivity : AppCompatActivity() {
         eventAdapter = EventAdapter(
             events = mutableListOf(),
             onEventClick = { event ->
-                // Переход к EmotionActivity
                 val intent = Intent(this, EmotionActivity::class.java)
                 intent.putExtra("eventId", event.id)
-                intent.putExtra("event", event.description)
                 startActivity(intent)
             },
             onDeleteClick = { event ->
-                // Удаление события
                 lifecycleScope.launch {
-                    eventViewModel.deleteEvent(event) // Удаление события через ViewModel
+                    eventViewModel.deleteEvent(event)
                 }
+            },
+            onLongClick = { event ->
+                showProcessEventDialog(event)
+            },
+            onResetClick = { event ->
+                showResetEventDialog(event)
             }
         )
 
@@ -54,49 +54,77 @@ class MainActivity : AppCompatActivity() {
         // Подписка на обновления списка событий
         lifecycleScope.launch {
             eventViewModel.getAllEvents().collect { events ->
-                eventAdapter.setEvents(events) // Обновляем список событий
+                eventAdapter.setEvents(events)
             }
         }
 
         // Обработка кнопки добавления события
         findViewById<Button>(R.id.add_event_button).setOnClickListener {
-            showAddEventDialog() // Показ диалога для добавления нового события
+            showAddEventDialog()
         }
     }
 
-    // Метод для показа диалога добавления события
-    private fun showAddEventDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_event, null)
-        val editTextEvent = dialogView.findViewById<EditText>(R.id.edit_text_event)
-        val characterCount = dialogView.findViewById<TextView>(R.id.character_count)
+    // Диалог для обработки события
+    private fun showProcessEventDialog(event: Event) {
+        AlertDialog.Builder(this)
+            .setTitle("Обработка события")
+            .setMessage("Отметить событие как обработанное?")
+            .setPositiveButton("Да") { _, _ ->
+                lifecycleScope.launch {
+                    val updatedEvent = event.copy(isProcessed = true)
+                    eventViewModel.updateEvent(updatedEvent)
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .create()
+            .show()
+    }
 
-        // Обновляем счётчик символов в режиме реального времени
+    // Диалог для сброса статуса события
+    private fun showResetEventDialog(event: Event) {
+        AlertDialog.Builder(this)
+            .setTitle("Сброс статуса")
+            .setMessage("Хотите еще поработать над событием?")
+            .setPositiveButton("Да") { _, _ ->
+                lifecycleScope.launch {
+                    val updatedEvent = event.copy(isProcessed = false)
+                    eventViewModel.updateEvent(updatedEvent)
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .create()
+            .show()
+    }
+
+    // Диалог для добавления нового события
+    private fun showAddEventDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_event, null)
+        val editTextEvent = dialogView.findViewById<android.widget.EditText>(R.id.edit_text_event)
+        val characterCount = dialogView.findViewById<android.widget.TextView>(R.id.character_count)
+
         editTextEvent.addTextChangedListener { text ->
             val length = text?.length ?: 0
             characterCount.text = "$length/100"
         }
 
-        // Создание AlertDialog
-        val dialog = AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setView(dialogView)
             .setPositiveButton("Добавить") { _, _ ->
                 val eventText = editTextEvent.text.toString()
                 if (eventText.isNotBlank()) {
-                    addNewEvent(eventText) // Добавляем новое событие
+                    addNewEvent(eventText)
                 }
             }
             .setNegativeButton("Отмена", null)
             .create()
-
-        dialog.show()
+            .show()
     }
 
-    // Метод для добавления нового события
+    // Добавление нового события
     private fun addNewEvent(description: String) {
         lifecycleScope.launch {
             val newEvent = Event(description = description)
-            eventViewModel.addEvent(newEvent) // Добавляем событие через ViewModel
+            eventViewModel.addEvent(newEvent)
         }
     }
 }
-

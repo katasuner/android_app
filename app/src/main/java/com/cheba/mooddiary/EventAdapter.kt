@@ -6,16 +6,19 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.cheba.mooddiary.R
 
 class EventAdapter(
     private val events: MutableList<Event>,
-    private val onEventClick: (Event) -> Unit, // Колбэк для клика по событию
-    private val onDeleteClick: (Event) -> Unit // Колбэк для удаления события
+    private val onEventClick: (Event) -> Unit,
+    private val onDeleteClick: (Event) -> Unit,
+    private val onLongClick: (Event) -> Unit,
+    private val onResetClick: (Event) -> Unit // Новый колбэк для сброса статуса
 ) : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
 
     inner class EventViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val eventDescription: TextView = itemView.findViewById(R.id.event_text) // Текст события
-        val deleteButton: ImageButton = itemView.findViewById(R.id.delete_button) // Кнопка удаления
+        val eventDescription: TextView = itemView.findViewById(R.id.event_text)
+        val deleteButton: ImageButton = itemView.findViewById(R.id.delete_button)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
@@ -27,12 +30,27 @@ class EventAdapter(
         val event = events[position]
         holder.eventDescription.text = event.description
 
-        // Обработка клика на текст события (переход на другую страницу)
+        // Изменяем фон на основе статуса
+        val backgroundResource = if (event.isProcessed) {
+            R.drawable.rounded_background_processed
+        } else {
+            R.drawable.rounded_background
+        }
+        holder.itemView.setBackgroundResource(backgroundResource)
+
         holder.eventDescription.setOnClickListener {
             onEventClick(event)
         }
 
-        // Обработка клика на крестик (удаление события)
+        holder.eventDescription.setOnLongClickListener {
+            if (event.isProcessed) {
+                onResetClick(event) // Показываем окно для сброса
+            } else {
+                onLongClick(event) // Показываем окно для обработки
+            }
+            true
+        }
+
         holder.deleteButton.setOnClickListener {
             onDeleteClick(event)
         }
@@ -40,14 +58,10 @@ class EventAdapter(
 
     override fun getItemCount(): Int = events.size
 
-    // Метод для обновления списка событий
     fun setEvents(newEvents: List<Event>) {
         events.clear()
         events.addAll(newEvents)
         notifyDataSetChanged()
     }
 }
-
-
-
 

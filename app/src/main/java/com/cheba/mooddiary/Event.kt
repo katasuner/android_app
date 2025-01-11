@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "events")
 data class Event(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0, // Автоматически генерируемый ID
-    val description: String // Описание события
+    val id: Int = 0,
+    val description: String,
+    val isProcessed: Boolean = false // Поле для статуса события
 )
